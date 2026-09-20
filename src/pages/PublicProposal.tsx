@@ -57,9 +57,10 @@ export default function PublicProposal() {
         .neq("status", "draft")
         .single();
 
-      if (p) {
+      const proposalRow = p as any;
+      if (proposalRow) {
         // Check if expired client-side as well
-        if (p.share_expires_at && new Date(p.share_expires_at) < new Date()) {
+        if (proposalRow.share_expires_at && new Date(proposalRow.share_expires_at) < new Date()) {
           setExpired(true);
           setLoading(false);
           return;
