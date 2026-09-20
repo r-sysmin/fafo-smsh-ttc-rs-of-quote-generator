@@ -65,7 +65,7 @@ export default function PublicProposal() {
           setLoading(false);
           return;
         }
-        await loadProposal(p);
+        await loadProposal(proposalRow);
       } else {
         // Could be password-protected or truly not found
         // Check if it needs a password by calling the edge function with empty password
