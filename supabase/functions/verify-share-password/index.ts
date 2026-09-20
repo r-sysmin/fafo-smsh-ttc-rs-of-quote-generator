@@ -118,9 +118,8 @@ Deno.serve(async (req) => {
       supabase
         .from("proposals")
         .select(
-          "id, title, status, content, pricing, subtotal, total, tax_rate, discount_total, " +
-          "valid_until, notes, share_id, share_expires_at, created_at, updated_at, " +
-          "org_id, department_id, user_id, version_number, client_id, template_id, clients(name)"
+          "id, title, status, content, subtotal, total, tax_rate, discount_total, " +
+          "valid_until, share_id, share_expires_at, created_at, org_id, clients(name)"
         )
         .eq("id", proposal.id)
         .single(),

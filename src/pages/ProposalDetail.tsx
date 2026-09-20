@@ -72,17 +72,25 @@ export default function ProposalDetail() {
 
   const saveShareSettings = async () => {
     setSavingShare(true);
-    const updates: any = {
-      share_expires_at: shareExpiresAt?.toISOString() ?? null,
-    };
-    if (sharePassword.trim()) {
-      const { data: hash } = await (supabase.rpc as any)("hash_share_password", {
-        _password: sharePassword,
-      });
-      updates.share_password_hash = hash;
+    const { data, error } = await supabase.functions.invoke("set-share-settings", {
+      body: {
+        proposal_id: id,
+        password: sharePassword.trim() ? sharePassword : null,
+        expires_at: shareExpiresAt?.toISOString() ?? null,
+      },
+    });
+
+    if (error || data?.error) {
+      toast.error(data?.error || "Could not update share settings");
+      setSavingShare(false);
+      return;
     }
-    await supabase.from("proposals").update(updates).eq("id", id!);
-    setProposal({ ...proposal, ...updates, share_expires_at: shareExpiresAt?.toISOString() ?? null });
+
+    setProposal({
+      ...proposal,
+      share_expires_at: shareExpiresAt?.toISOString() ?? null,
+      ...(sharePassword.trim() ? { share_password_hash: "set" } : {}),
+    });
     toast.success("Share settings updated");
     setSharePassword("");
     setSavingShare(false);
@@ -90,13 +98,29 @@ export default function ProposalDetail() {
   };
 
   const removeSharePassword = async () => {
-    await supabase.from("proposals").update({ share_password_hash: null } as any).eq("id", id!);
+    const { data, error } = await supabase.functions.invoke("set-share-settings", {
+      body: {
+        proposal_id: id,
+        remove_password: true,
+        expires_at: shareExpiresAt?.toISOString() ?? null,
+      },
+    });
+    if (error || data?.error) {
+      toast.error(data?.error || "Could not remove share password");
+      return;
+    }
     setProposal({ ...proposal, share_password_hash: null });
     toast.success("Share password removed");
   };
 
   const removeShareExpiration = async () => {
-    await supabase.from("proposals").update({ share_expires_at: null } as any).eq("id", id!);
+    const { data, error } = await supabase.functions.invoke("set-share-settings", {
+      body: { proposal_id: id, expires_at: null },
+    });
+    if (error || data?.error) {
+      toast.error(data?.error || "Could not remove share expiration");
+      return;
+    }
     setProposal({ ...proposal, share_expires_at: null });
     setShareExpiresAt(undefined);
     toast.success("Share expiration removed");

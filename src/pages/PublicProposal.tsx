@@ -49,19 +49,23 @@ export default function PublicProposal() {
       // First try to load — RLS will block password-protected proposals
       const { data: p, error } = await supabase
         .from("proposals")
-        .select("*, clients(name)")
+        .select(
+          "id, org_id, title, status, content, subtotal, total, tax_rate, discount_total, " +
+          "valid_until, share_id, share_expires_at, created_at, clients(name)"
+        )
         .eq("share_id", shareId)
         .neq("status", "draft")
         .single();
 
-      if (p) {
+      const proposalRow = p as any;
+      if (proposalRow) {
         // Check if expired client-side as well
-        if (p.share_expires_at && new Date(p.share_expires_at) < new Date()) {
+        if (proposalRow.share_expires_at && new Date(proposalRow.share_expires_at) < new Date()) {
           setExpired(true);
           setLoading(false);
           return;
         }
-        await loadProposal(p);
+        await loadProposal(proposalRow);
       } else {
         // Could be password-protected or truly not found
         // Check if it needs a password by calling the edge function with empty password
