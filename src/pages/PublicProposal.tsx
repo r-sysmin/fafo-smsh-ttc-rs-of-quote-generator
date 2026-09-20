@@ -49,7 +49,10 @@ export default function PublicProposal() {
       // First try to load — RLS will block password-protected proposals
       const { data: p, error } = await supabase
         .from("proposals")
-        .select("*, clients(name)")
+        .select(
+          "id, org_id, title, status, content, subtotal, total, tax_rate, discount_total, " +
+          "valid_until, share_id, share_expires_at, created_at, clients(name)"
+        )
         .eq("share_id", shareId)
         .neq("status", "draft")
         .single();
