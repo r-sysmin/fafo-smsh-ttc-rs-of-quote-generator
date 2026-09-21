@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,25 +14,32 @@ export default function Signup() {
   const [loading, setLoading] = useState(false);
   const { user, signUp, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const rawNext = params.get("next") ?? "";
+  const next = rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "";
+  const target = next || "/dashboard";
 
   useEffect(() => {
-    if (user) navigate("/dashboard", { replace: true });
-  }, [user, navigate]);
+    if (user) {
+      if (next) window.location.href = next;
+      else navigate("/dashboard", { replace: true });
+    }
+  }, [user, navigate, next]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password.length < 6) { toast.error("Password must be at least 6 characters"); return; }
     setLoading(true);
-    const { error } = await signUp(email, password);
+    const { error } = await signUp(email, password, target);
     setLoading(false);
     if (error) { toast.error(error.message); } else {
       toast.success("Check your email for a confirmation link!");
-      navigate("/login");
+      navigate(next ? `/login?next=${encodeURIComponent(next)}` : "/login");
     }
   };
 
   const handleGoogle = async () => {
-    try { await signInWithGoogle(); } catch { toast.error("Google sign-in failed"); }
+    try { await signInWithGoogle(target); } catch { toast.error("Google sign-in failed"); }
   };
 
   return (
