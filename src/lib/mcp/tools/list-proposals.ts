@@ -30,7 +30,11 @@ export default defineTool({
       id: p.id,
       title: p.title,
       status: p.status as string,
-      client_name: (p.clients as { name: string } | null)?.name ?? null,
+      client_name: (() => {
+        const c = p.clients as unknown as { name: string } | { name: string }[] | null;
+        const one = Array.isArray(c) ? c[0] : c;
+        return one?.name ?? null;
+      })(),
       subtotal: p.subtotal ?? null,
       total: p.total ?? null,
       tax_rate: p.tax_rate ?? null,

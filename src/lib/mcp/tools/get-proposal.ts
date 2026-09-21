@@ -29,7 +29,9 @@ export default defineTool({
       .order("sort_order", { ascending: true });
     if (itemsError) throw new ToolError(itemsError.message);
 
-    const client = data.clients as { name: string; company: string | null; email: string | null } | null;
+    type ClientRow = { name: string; company: string | null; email: string | null };
+    const rawClient = data.clients as unknown as ClientRow | ClientRow[] | null;
+    const client = Array.isArray(rawClient) ? rawClient[0] ?? null : rawClient;
     const proposal = {
       id: data.id,
       title: data.title,
