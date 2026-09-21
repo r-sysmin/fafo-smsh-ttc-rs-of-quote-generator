@@ -24,9 +24,9 @@ type AuthContextType = {
   loading: boolean;
   role: AppRole | null;
   organization: Organization | null;
-  signUp: (email: string, password: string) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string, redirectPath?: string) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
-  signInWithGoogle: () => Promise<void>;
+  signInWithGoogle: (redirectPath?: string) => Promise<void>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error: Error | null }>;
   updatePassword: (password: string) => Promise<{ error: Error | null }>;
@@ -99,11 +99,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string) => {
+  const signUp = async (email: string, password: string, redirectPath?: string) => {
     const { error } = await supabase.auth.signUp({
       email,
       password,
-      options: { emailRedirectTo: window.location.origin },
+      options: { emailRedirectTo: `${window.location.origin}${redirectPath ?? ""}` },
     });
     return { error: error ? new Error(error.message) : null };
   };
@@ -113,9 +113,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error: error ? new Error(error.message) : null };
   };
 
-  const signInWithGoogle = async () => {
+  const signInWithGoogle = async (redirectPath?: string) => {
     await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
+      redirect_uri: `${window.location.origin}${redirectPath ?? ""}`,
     });
   };
 

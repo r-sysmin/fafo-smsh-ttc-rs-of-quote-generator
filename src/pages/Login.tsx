@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,10 +14,17 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const { user, signIn, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const rawNext = params.get("next") ?? "";
+  const next = rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "";
+  const target = next || "/dashboard";
 
   useEffect(() => {
-    if (user) navigate("/dashboard", { replace: true });
-  }, [user, navigate]);
+    if (user) {
+      if (next) window.location.href = next;
+      else navigate("/dashboard", { replace: true });
+    }
+  }, [user, navigate, next]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,13 +33,15 @@ export default function Login() {
     setLoading(false);
     if (error) {
       toast.error(error.message);
+    } else if (next) {
+      window.location.href = next;
     } else {
       navigate("/dashboard");
     }
   };
 
   const handleGoogle = async () => {
-    try { await signInWithGoogle(); } catch { toast.error("Google sign-in failed"); }
+    try { await signInWithGoogle(target); } catch { toast.error("Google sign-in failed"); }
   };
 
   return (

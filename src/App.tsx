@@ -20,6 +20,7 @@ import ProposalDetail from "./pages/ProposalDetail";
 import ClientDetail from "./pages/ClientDetail";
 import Settings from "./pages/Settings";
 import PublicProposal from "./pages/PublicProposal";
+import OAuthConsent from "./pages/OAuthConsent";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -47,6 +48,7 @@ const App = () => (
             <Route path="/proposals/:id/edit" element={<ProtectedRoute><ProposalBuilder /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             <Route path="/p/:shareId" element={<PublicProposal />} />
+            <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
